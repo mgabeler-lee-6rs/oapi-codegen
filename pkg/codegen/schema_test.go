@@ -206,7 +206,7 @@ func TestProperty_GoTypeDef(t *testing.T) {
 			p := Property{
 				Schema:    tt.fields.Schema,
 				Required:  tt.fields.Required,
-				Nullable:  tt.fields.Nullable,
+				Nullable:  &tt.fields.Nullable,
 				ReadOnly:  tt.fields.ReadOnly,
 				WriteOnly: tt.fields.WriteOnly,
 			}
@@ -446,7 +446,7 @@ func TestProperty_GoTypeDef_nullable(t *testing.T) {
 			p := Property{
 				Schema:    tt.fields.Schema,
 				Required:  tt.fields.Required,
-				Nullable:  tt.fields.Nullable,
+				Nullable:  &tt.fields.Nullable,
 				ReadOnly:  tt.fields.ReadOnly,
 				WriteOnly: tt.fields.WriteOnly,
 			}

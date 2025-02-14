@@ -84,7 +84,7 @@ type Property struct {
 	JsonFieldName string
 	Schema        Schema
 	Required      bool
-	Nullable      bool
+	Nullable      *bool
 	ReadOnly      bool
 	WriteOnly     bool
 	NeedsFormTag  bool
@@ -115,11 +115,12 @@ func (p Property) GoFieldName() string {
 
 func (p Property) GoTypeDef() string {
 	typeDef := p.Schema.TypeDecl()
-	if globalState.options.OutputOptions.NullableType && p.Nullable {
+	nullable := p.Nullable != nil && *p.Nullable
+	if globalState.options.OutputOptions.NullableType && nullable {
 		return "nullable.Nullable[" + typeDef + "]"
 	}
 	if !p.Schema.SkipOptionalPointer &&
-		(!p.Required || p.Nullable ||
+		(!p.Required || nullable ||
 			(p.ReadOnly && (!p.Required || !globalState.options.Compatibility.DisableRequiredReadOnlyAsPointer)) ||
 			p.WriteOnly) {
 
@@ -714,9 +715,10 @@ func GenFieldsFromProperties(props []Property) []string {
 		shouldOmitEmpty := (!p.Required || p.ReadOnly || p.WriteOnly) &&
 			(!p.Required || !p.ReadOnly || !globalState.options.Compatibility.DisableRequiredReadOnlyAsPointer)
 
-		omitEmpty := !p.Nullable && shouldOmitEmpty
+		nullable := p.Nullable != nil && *p.Nullable
+		omitEmpty := !nullable && shouldOmitEmpty
 
-		if p.Nullable && globalState.options.OutputOptions.NullableType {
+		if nullable && globalState.options.OutputOptions.NullableType {
 			omitEmpty = shouldOmitEmpty
 		}
 
@@ -780,7 +782,8 @@ func additionalPropertiesType(schema Schema) string {
 	if schema.AdditionalPropertiesType.RefType != "" {
 		addPropsType = schema.AdditionalPropertiesType.RefType
 	}
-	if schema.AdditionalPropertiesType.OAPISchema != nil && schema.AdditionalPropertiesType.OAPISchema.Nullable {
+	oapiSchema := schema.AdditionalPropertiesType.OAPISchema
+	if oapiSchema != nil && oapiSchema.Nullable != nil && *oapiSchema.Nullable {
 		addPropsType = "*" + addPropsType
 	}
 	return addPropsType

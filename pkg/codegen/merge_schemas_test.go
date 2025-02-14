@@ -322,9 +322,9 @@ func runSuite(t *testing.T, suite []testCase) {
 				return
 			}
 			for i, oneOf := range result.UnionElements {
-				typeIdx := slices.IndexFunc(result.AdditionalTypes, func(t TypeDefinition) bool { return t.TypeName == string(oneOf) })
+				typeIdx := slices.IndexFunc(result.AdditionalTypes, func(t TypeDefinition) bool { return t.TypeName == oneOf.GoType })
 				if typeIdx == -1 {
-					t.Fatalf("Expected oneOf %d to have type %s, but it was not found", i, oneOf)
+					t.Fatalf("Expected oneOf %d to have type %s, but it was not found", i, oneOf.GoType)
 					return
 				}
 				oneOfType := result.AdditionalTypes[typeIdx]

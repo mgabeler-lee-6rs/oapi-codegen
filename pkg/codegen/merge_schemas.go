@@ -125,7 +125,9 @@ func mergeOpenapiSchemas(s1, s2 openapi3.Schema) (openapi3.Schema, error) {
 
 	// NOTE: this must happen _after_ AllOf merging above or OneOfs can be lost, for example:
 	//          SchemaFoo: {allOf: [{allOf: [{oneOf: [A, B]}], SchemaBar]}
-	//       the resulting schema will only include SchemaBar
+	//       the resulting schema will only include SchemaBar if OneOf merging is done before
+	//       AllOf recursion - this is because we won't have any deeply nested OneOfs flattened
+	//       into s1/s2 yet at that point
 	// TODO: this does not accurately merge OneOf/AnyOf, for example if an AllOf contains 2
 	//       OneOf schema children, the result should require one from each set, but this will
 	//       require only one from the combined set

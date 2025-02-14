@@ -252,6 +252,35 @@ func TestAllOf(t *testing.T) {
 			]`,
 			nil,
 		),
+		// other test cases
+		makeTestCase(
+			"should preserve nested onOf",
+			`[
+				{
+					"allOf": [
+						{
+							"allOf": [
+								{
+									"oneOf": [
+										{"properties": { "a_foo_one_of_0": { "type": "string" } }},
+										{"properties": { "a_foo_one_of_1": { "type": "string" } }}
+									]
+								}
+							]
+						}, 
+						{ "properties": { "a_foo": { "type": "string" } } }
+					]
+				}
+			]`,
+			`{
+				"a_foo": { "type": "string" }
+			}`,
+			`[
+				{ "properties": { "a_foo_one_of_0": { "type": "string" } }},
+				{ "properties": { "a_foo_one_of_1": { "type": "string" } }}
+			]`,
+			nil,
+		),
 	}
 
 	runSuite(t, suite)

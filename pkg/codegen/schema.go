@@ -354,7 +354,8 @@ func GenerateGoSchema(sref *openapi3.SchemaRef, path []string) (Schema, error) {
 			// If additional properties are defined, we will override the default
 			// above with the specific definition.
 			if schema.AdditionalProperties.Schema != nil {
-				additionalSchema, err := GenerateGoSchema(schema.AdditionalProperties.Schema, path)
+				additionalPropertiesPath := append(path, "AdditionalProperties")
+				additionalSchema, err := GenerateGoSchema(schema.AdditionalProperties.Schema, additionalPropertiesPath)
 				if err != nil {
 					return Schema{}, fmt.Errorf("error generating type for additional properties: %w", err)
 				}
@@ -363,11 +364,11 @@ func GenerateGoSchema(sref *openapi3.SchemaRef, path []string) (Schema, error) {
 					// but are not a pre-defined type, we need to define a type
 					// for them, which will be based on the field names we followed
 					// to get to the type.
-					typeName := PathToTypeName(append(path, "AdditionalProperties"))
+					typeName := PathToTypeName(additionalPropertiesPath)
 
 					typeDef := TypeDefinition{
 						TypeName: typeName,
-						JsonName: strings.Join(append(path, "AdditionalProperties"), "."),
+						JsonName: strings.Join(additionalPropertiesPath, "."),
 						Schema:   additionalSchema,
 					}
 					additionalSchema.RefType = typeName
@@ -465,6 +466,7 @@ func GenerateGoSchema(sref *openapi3.SchemaRef, path []string) (Schema, error) {
 
 			newTypeDef := TypeDefinition{
 				TypeName: typeName,
+				JsonName: strings.Join(path, "."),
 				Schema:   outSchema,
 			}
 			outSchema = Schema{
@@ -864,7 +866,11 @@ func generateUnion(outSchema *Schema, elements openapi3.SchemaRefs, discriminato
 			if elementSchema.TypeDecl() == elementName {
 				elementSchema.GoType = elementName
 			} else {
-				td := TypeDefinition{Schema: elementSchema, TypeName: elementName}
+				td := TypeDefinition{
+					Schema:   elementSchema,
+					JsonName: strings.Join(elementPath, "."),
+					TypeName: elementName,
+				}
 				outSchema.AdditionalTypes = append(outSchema.AdditionalTypes, td)
 				elementSchema.GoType = td.TypeName
 			}
